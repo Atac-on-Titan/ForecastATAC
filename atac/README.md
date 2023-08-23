@@ -17,3 +17,24 @@ stop = stop_manager.find_stop(id_to_find)
 ids_to_find = ["00213", "04972"]
 stops = stop_manager.find_stop(ids_to_find)
 ```
+
+Alternatively you can also create the Manager from a `pandas` dataframe.
+
+```python
+import pandas as pd
+from atac import StopManager
+
+stop_manager = StopManager(pd.read_csv('data/stops.txt'))
+```
+
+# Trips
+The `TripManager` loads ATAC trip data. It can be created with a `trips.txt` file, a list of `Trip` objects, or from a
+`pandas` dataframe.
+
+```python
+import pandas as pd
+from atac import TripManager
+
+TripManager('data/trips.txt')
+TripManager(pd.read_csv('data/trips.txt'))
+```
