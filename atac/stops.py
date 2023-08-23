@@ -3,14 +3,22 @@ import csv
 import logging.config
 import os
 from dataclasses import dataclass
+from typing import Union
 
 from dotenv import load_dotenv
 
-# Load the logging configuration from the logging.ini file
-logging.config.fileConfig('resources/test_log_conf.ini')
+load_dotenv()
+log_conf_path = os.getenv("log_conf")
+
+if log_conf_path:
+    # Load the logging configuration from the logging.ini file
+    logging.config.fileConfig(log_conf_path)
+else:
+    logging.config.fileConfig("log_conf.ini")
 
 # Create a logger
 logger = logging.getLogger(__name__)  # Replace with the logger name from your config
+
 
 @dataclass
 class Stop:
@@ -36,18 +44,20 @@ class StopManager:
         else:
             self.stops = stops
 
-    def find_stop(self, id: str):
+    def find_stop(self, id: Union[str, list]):
         """Gets the stop for the specific id.
 
         :arg
-            id (str): the ID of the stop to find.
+            id (Union[str, list]): the ID or IDs of the stop/s to find.
 
         :return
             (Union[Stop, None]): a Stop object with a matching ID if found, otherwise returns None.
         """
-        stop = list(filter(lambda stop: stop.id == id, self.stops))
-        if stop:
-            return stop[0]
+        stops = list(filter(lambda stop: stop.id == id, self.stops))
+        if len(stops) == 1:
+            return stops[0]
+        if len(stops) > 1:
+            return stops
         return None
 
 
@@ -74,8 +84,3 @@ def load_stops(file_path: str):
             stops.append(stop)
 
     return stops
-
-
-load_dotenv()
-stop_file_path = os.getenv("stops")
-stop_manager = StopManager(stop_file_path)
