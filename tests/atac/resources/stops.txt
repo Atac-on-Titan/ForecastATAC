@@ -1,0 +1,4 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_url,wheelchair_boarding,stop_timezone,location_type,parent_station
+00213,00213,EUROPA/BOSTON,,41.830218,12.471487,,,,,
+04972,04972,SAN GIOVANNI (MA-MC),,41.884690,12.510405,,,,,
+04994,04994,BOSTON,,41.829032,12.471233,,,,,
