@@ -54,7 +54,7 @@ class StopManager:
         elif type(stops) == pd.DataFrame:
             self.stops = [Stop.from_pandas_row(row) for row in stops.iterrows()]
 
-    def find_stop(self, id: Union[str, list]):
+    def find(self, id: Union[str, list]):
         """Gets the stop for the specific id.
 
         :arg

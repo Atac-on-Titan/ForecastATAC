@@ -9,6 +9,6 @@ def test_load_stops():
 
 def test_stop_manager():
     stop_manager = StopManager("tests/atac/data/stops.txt")
-    found_stop = stop_manager.find_stop("00213")
+    found_stop = stop_manager.find("00213")
 
     assert found_stop

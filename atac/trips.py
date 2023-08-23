@@ -73,3 +73,15 @@ class TripManager:
             self.trips = trips
         elif type(trips) == pd.DataFrame:
             self.trips = [Trip.from_pandas_row(row) for row in trips.iterrows()]
+
+    def find(self, **kwargs):
+        if "route_id" in kwargs:
+            trips = list(filter(lambda trip: trip.route_id == kwargs.get("route_id"), self.trips))
+        elif "service_id" in kwargs:
+            trips = list(filter(lambda trip: trip.service_id == kwargs.get("service_id"), self.trips))
+        elif "trip_id" in kwargs:
+            trips = list(filter(lambda trip: trip.trip_id == kwargs.get("trip_id"), self.trips))
+        else:
+            raise ValueError(f"Keyword arguments must contain either: route_id, service_id, trip_id.")
+
+        return trips
