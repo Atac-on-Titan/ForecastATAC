@@ -1,1 +1,1 @@
-from .stops import load_stops
+from .stops import load_stops, stop_manager

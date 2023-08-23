@@ -12,10 +12,6 @@ logging.config.fileConfig('resources/test_log_conf.ini')
 # Create a logger
 logger = logging.getLogger(__name__)  # Replace with the logger name from your config
 
-load_dotenv()
-stop_file_path = os.getenv("stops")
-
-
 @dataclass
 class Stop:
     id: str
@@ -39,6 +35,20 @@ class StopManager:
             self.stops = load_stops(stops)
         else:
             self.stops = stops
+
+    def find_stop(self, id: str):
+        """Gets the stop for the specific id.
+
+        :arg
+            id (str): the ID of the stop to find.
+
+        :return
+            (Union[Stop, None]): a Stop object with a matching ID if found, otherwise returns None.
+        """
+        stop = list(filter(lambda stop: stop.id == id, self.stops))
+        if stop:
+            return stop[0]
+        return None
 
 
 def load_stops(file_path: str):
@@ -64,3 +74,8 @@ def load_stops(file_path: str):
             stops.append(stop)
 
     return stops
+
+
+load_dotenv()
+stop_file_path = os.getenv("stops")
+stop_manager = StopManager(stop_file_path)
