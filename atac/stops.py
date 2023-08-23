@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass
 from typing import Union
 
+import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,6 +35,13 @@ class Stop:
     location_type: str
     parent_station: str
 
+    @staticmethod
+    def from_pandas_row(row):
+        return Stop(row['stop_id'], row['stop_code'], row['stop_name'], row['stop_desc'], row['stop_lat'],
+                    row['stop_lon'],
+                    row['stop_url'], row['wheelchair_boarding'], row['stop_timezone'], row['location_type'],
+                    row['parent_station'])
+
 
 class StopManager:
     """Holds ATAC stops and has methods for searching for them."""
@@ -41,8 +49,10 @@ class StopManager:
     def __init__(self, stops):
         if type(stops) == str:
             self.stops = load_stops(stops)
-        else:
+        elif type(stops) == list:
             self.stops = stops
+        elif type(stops) == pd.DataFrame:
+            self.stops = [Stop.from_pandas_row(row) for row in stops.iterrows()]
 
     def find_stop(self, id: Union[str, list]):
         """Gets the stop for the specific id.
@@ -53,7 +63,13 @@ class StopManager:
         :return
             (Union[Stop, None]): a Stop object with a matching ID if found, otherwise returns None.
         """
-        stops = list(filter(lambda stop: stop.id == id, self.stops))
+        if type(id) == str:
+            stops = list(filter(lambda stop: stop.id == id, self.stops))
+        elif type(id) == list:
+            stops = list(filter(lambda stop: stop.id in id, self.stops))
+        else:
+            raise ValueError(f"id must be of type str of list.")
+
         if len(stops) == 1:
             return stops[0]
         if len(stops) > 1:
