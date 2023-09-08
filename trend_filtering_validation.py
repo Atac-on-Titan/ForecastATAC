@@ -1,9 +1,7 @@
 """Script for running the validation."""
 import logging.config
-from datetime import datetime
 from pathlib import Path
 
-import boto3
 import cvxpy as cp
 import numpy as np
 import pandas as pd
@@ -56,11 +54,11 @@ if __name__ == "__main__":
     for object_key, local_file_path in zip(files_to_download, file_paths):
         s3_download(bucket_name, object_key, local_file_path)
 
-    if not all(map(lambda: Path(local_file_path).exists(), file_paths)):
+    if not all(map(lambda local_file_path: Path(local_file_path).exists(), file_paths)):
         logger.error("Not all files present, analysis not possible.")
         exit(1)
 
-    logger.info("All files downloaded.")
+    logger.info("All files present.")
 
     trip_live = pd.read_feather("data/trip_live_final.feather")
 
@@ -80,10 +78,11 @@ if __name__ == "__main__":
     prob = cp.Problem(obj)
 
     prob.solve(solver=cp.CVXOPT, verbose=True)
-    print('Solver status: {}'.format(prob.status))
+    logger.info('Solver status: {}'.format(prob.status))
 
     congestion_dict = dict(zip(test_graph.nodes, x.value))
 
+    logger.info("Creating train-val split.")
     trip_live['time_pre_datetime'] = pd.to_datetime(trip_live['time_pre_datetime']).dt.date
     val_mask = trip_live['time_pre_datetime'] >= np.datetime64('2023-06-09')
     train_data = trip_live[~val_mask]
