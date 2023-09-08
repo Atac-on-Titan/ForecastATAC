@@ -1,5 +1,6 @@
 """Script for running the validation."""
-
+import logging.config
+from datetime import datetime
 from pathlib import Path
 
 import boto3
@@ -12,6 +13,11 @@ from preprocessing import build_route_stops, build_stop_graph
 from trend_filtering import vertex_signal, difference_op, trend_filter_validate
 
 if __name__ == "__main__":
+    log_dir = "logs"
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+    logging.config.fileConfig("log_conf.ini")
+    logger = logging.getLogger("trend-filtering-validation")
+    logger.setLevel(logging.INFO)
 
     # create data directory if not exists
 
@@ -28,18 +34,23 @@ if __name__ == "__main__":
     if not Path(local_file_path).exists():
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{object_key}"
 
+        logger.info(f"Data does not exist locally, downloading from {s3_url}")
         # Make an HTTP GET request to the pre-signed URL to download the object
         response = requests.get(s3_url)
 
         if response.status_code == 200:
             # Save the content of the response to a local file
+            logger.info(f"Download successful, saving data at {local_file_path}")
             with open(local_file_path, 'wb') as f:
                 f.write(response.content)
-            print(f"Object '{object_key}' downloaded to '{local_file_path}' successfully.")
+            logger.info(f"Object '{object_key}' downloaded to '{local_file_path}' successfully.")
 
         else:
-            print(f"Failed to download object '{object_key}'. Status code: {response.status_code}")
+            logger.error(f"Failed to download object '{object_key}'. Status code: {response.status_code}")
             exit(1)
+
+    else:
+        logger.info(f"Data exists locally at {local_file_path}")
 
     trip_live = pd.read_feather(local_file_path)
 
