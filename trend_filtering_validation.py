@@ -12,24 +12,8 @@ import requests
 from preprocessing import build_route_stops, build_stop_graph
 from trend_filtering import vertex_signal, difference_op, trend_filter_validate
 
-if __name__ == "__main__":
-    log_dir = "logs"
-    Path(log_dir).mkdir(parents=True, exist_ok=True)
-    logging.config.fileConfig("log_conf.ini")
-    logger = logging.getLogger("trend-filtering-validation")
-    logger.setLevel(logging.INFO)
 
-    # create data directory if not exists
-
-    Path("data").mkdir(parents=True, exist_ok=True)
-
-    # Initialize an S3 client
-    s3 = boto3.client('s3')
-
-    bucket_name = "statistical-learning"
-    object_key = "trip_live_final.feather"
-    local_file_path = "data/live_data_final_2.feather"
-
+def s3_download(bucket_name, object_key, local_file_path):
     # we only want to download the data once.
     if not Path(local_file_path).exists():
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{object_key}"
@@ -52,7 +36,33 @@ if __name__ == "__main__":
     else:
         logger.info(f"Data exists locally at {local_file_path}")
 
-    trip_live = pd.read_feather(local_file_path)
+
+if __name__ == "__main__":
+    log_dir = "logs"
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+    logging.config.fileConfig("log_conf.ini")
+    logger = logging.getLogger("trend-filtering-validation")
+    logger.setLevel(logging.INFO)
+
+    # create data directory if not exists
+
+    Path("data").mkdir(parents=True, exist_ok=True)
+    Path("data/static").mkdir(parents=True, exist_ok=True)
+
+    bucket_name = "statistical-learning"
+    files_to_download = ["trip_live_final.feather", 'static/trips.txt', 'static/stop_times.txt', 'static/stops.txt', 'static/routes.txt']
+    file_paths = ["data/live_data_final.feather", 'data/static/trips.txt', 'data/static/stop_times.txt', 'data/static/stops.txt', 'data/static/routes.txt']
+
+    for object_key, local_file_path in zip(files_to_download, file_paths):
+        s3_download(bucket_name, object_key, local_file_path)
+
+    if not all(map(lambda: Path(local_file_path).exists(), file_paths)):
+        logger.error("Not all files present, analysis not possible.")
+        exit(1)
+
+    logger.info("All files downloaded.")
+
+    trip_live = pd.read_feather("data/trip_live_final.feather")
 
     route_stops = build_route_stops('data/static/trips.txt', 'data/static/stop_times.txt', 'data/static/stops.txt',
                                     'data/static/routes.txt')
