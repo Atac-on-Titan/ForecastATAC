@@ -3,5 +3,9 @@ numpy
 networkx
 folium
 cvxpy
+cvxopt
 jupyter
 pyarrow
+scipy
+boto3
+requests
