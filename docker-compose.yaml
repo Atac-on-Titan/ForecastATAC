@@ -10,5 +10,5 @@ services:
   trend-filtering-validation:
     image: ghcr.io/atac-on-titan/forecastatac:latest
     volumes:
-      - tend-filtering-validation:/app/validation
+      - trend-filtering-validation:/app/validation
       - logs:/app/logs
