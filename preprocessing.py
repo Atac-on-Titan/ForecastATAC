@@ -85,3 +85,26 @@ def build_stop_graph(stops: Union[str, pd.DataFrame], route_stops: pd.DataFrame)
     init_graph.remove_nodes_from(list(nx.isolates(init_graph)))  # if present, we remove isolated nodes
 
     return init_graph
+
+
+def get_start_end_hours(start_hour: int, interval: int = 60):
+    """Creates a time interval from a start hour.
+
+    :arg
+        start_hour (int): the hour to be converted to a string, must be in interval [0, 23].
+        interval (int): the minute interval to be added to the start_hour, must be in interval [0, inf).
+
+    :return
+        (str, str) a tuple of strings in the format HH:MM.
+    """
+    if start_hour < 0 or start_hour > 23:
+        raise ValueError(f"Incorrect hour. Hour must be in interval [0, 23], but received hour: {start_hour}.")
+
+    start_minutes = start_hour * 60
+    end_minutes = start_minutes + interval
+
+    end_hour = end_minutes // 60
+    end_hour = end_hour if end_hour < 24 else 0
+    end_minutes = end_minutes % 60
+
+    return f"{start_hour:02}:00", f"{end_hour:02}:{end_minutes:02}"

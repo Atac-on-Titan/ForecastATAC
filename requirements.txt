@@ -8,3 +8,4 @@ jupyter
 pyarrow
 scipy
 requests
+pytest
