@@ -1,0 +1,14 @@
+version: "3.9"
+
+volumes:
+  trend-filtering-validation:
+    name: trend-filtering-validation
+  logs:
+    name: logs
+
+services:
+  trend-filtering-validation:
+    image: ghcr.io/atac-on-titan/forecastatac:latest
+    volumes:
+      - tend-filtering-validation:/app/validation
+      - logs:/app/logs
