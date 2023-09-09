@@ -8,29 +8,29 @@ import scipy
 import cvxpy as cp
 
 
-def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, wtr: Optional[str] = None,
-                  dow: Optional[int] = None, daytime: Optional[tuple[int, int]] = None) -> nx.Graph:
+def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[str] = None,
+                  day: Optional[int] = None, time: Optional[tuple[int, int]] = None) -> nx.Graph:
     """
     Function assigning signal over the public transport graph vertexes by averaging across the inbound edges
     elapsed time, according to a specific filtering option, passed as keyword argument.
     :param complete_df: The dataframe containing the preprocessed data.
     :param routes_graph: The graph, already built.
-    :param wtr: Main weather conditions.
-    :param dow: The day of the week, as integer.
-    :param daytime: The daytime, as an interval specified by a tuple of two integers.
+    :param weather: Main weather conditions.
+    :param day: The day of the week, as integer in the range [0, 6].
+    :param time: The daytime, as an interval specified by a tuple of two integers.
     :return: The graph with the signal defined over the vertex set.
     """
     routes_graph = routes_graph.copy()
 
-    if sum([(wtr is None), (dow is None), (daytime is None)]) != 2:
+    if sum([(weather is None), (day is None), (time is None)]) != 2:
         raise TypeError(
             'This functions builds the graph according to only one filtering option, you have to pass one and only one.')
-    if wtr is not None:
-        mask = (complete_df['weather_main_post'] == wtr.capitalize())
-    elif dow is not None:
-        mask = (complete_df['day_of_week'] == dow)
+    if weather is not None:
+        mask = (complete_df['weather_main_post'] == weather.capitalize())
+    elif day is not None:
+        mask = (complete_df['day_of_week'] == day)
     else:
-        mask = (complete_df['time_pre_datetime'].between_time(daytime[0], daytime[1]))
+        mask = (complete_df['time_pre_datetime'].between_time(time[0], time[1]))
 
     complete_df = complete_df[mask]
     if not len(complete_df):
@@ -78,6 +78,11 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
         val (pd.DataFrame): the validation data.
         routes_graph (nx.Graph): the networkx graph of bus routes.
         lambda_seq (tuple[float, ...]): the sequence of lambda values to try.
+        cond_filter (tuple[float, ...]): the filter used to select validation data. A tuple with a key that is either
+        "weather", "day", "time", and a corresponding value, e.g. ("day", 0) for Monday.
+
+    :return
+        (dict) a dictionary with validation metrics.
     """
     cond_filter = {cond_filter[0]: cond_filter[1]}
 

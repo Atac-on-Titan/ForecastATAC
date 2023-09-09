@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     # build the signal over the vertices
     logger.info("Building signal graph.")
-    signal_graph = vertex_signal(trip_live, init_graph, wtr='clear')
+    signal_graph = vertex_signal(trip_live, init_graph, weather='clear')
 
     # produce difference operator
     difference = difference_op(signal_graph, 2)
@@ -110,8 +110,10 @@ if __name__ == "__main__":
     time_filters = [("time", (start, end)) for start, end in start_end_hours]
 
     filters = day_filters + weather_filters + time_filters
+    logger.info(f"Using filters: {filters}")
 
     lambda_seq = (0.001, 0.01, 0.1)
+    logger.info(f"Using lambda values: {lambda_seq}")
 
     validation_dir = "validation"
     logger.info(f"Creating directory {validation_dir} for validation results.")

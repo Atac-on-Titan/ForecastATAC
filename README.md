@@ -10,6 +10,16 @@ The `trend_filtering_validation` is a script that
 * stores the results of the optimisation and validation in local storage
 
 ## How to run
+
+### Command Line
+From the command line, you need to install the necessary packages in `requirements.txt` and then run:
 ```bash
 python trend_filtering_validation.py
+```
+
+### Docker
+Make sure you have Docker and docker-compose installed, then you can simply run the `docker-compose.yaml` file from the
+root directory of the project:
+```bash
+docker-compose up
 ```
