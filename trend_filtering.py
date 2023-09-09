@@ -1,4 +1,6 @@
 """Module for trend filtering functions."""
+import logging.config
+from pathlib import Path
 from typing import Optional, Dict
 
 import networkx as nx
@@ -6,6 +8,13 @@ import numpy as np
 import pandas as pd
 import scipy
 import cvxpy as cp
+
+
+log_dir = "logs"
+Path(log_dir).mkdir(parents=True, exist_ok=True)
+logging.config.fileConfig("log_conf.ini")
+logger = logging.getLogger("trend-filtering")
+logger.setLevel(logging.INFO)
 
 
 def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[str] = None,
@@ -93,6 +102,7 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
     metric_dict = {}
 
     for value_lambda in lambda_seq:
+        logger.info(f"Validating for lambda: {value_lambda}")
         # Filtering on training data
         x = cp.Variable(shape=len(time_vec))
         loss = cp.Minimize((1 / 2) * cp.sum_squares(time_vec - x)

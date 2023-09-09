@@ -1,4 +1,5 @@
 """Script for running the validation."""
+import argparse
 import json
 import logging.config
 from pathlib import Path
@@ -42,6 +43,18 @@ if __name__ == "__main__":
     logging.config.fileConfig("log_conf.ini")
     logger = logging.getLogger("trend-filtering-validation")
     logger.setLevel(logging.INFO)
+
+    # Create an argument parser with arguments
+    parser = argparse.ArgumentParser(description='Run the trend filtering validation.')
+    parser.add_argument('-f', '--filter', required=True, type=str, help="Path to a .json file with the filters for which"
+                                                                        "to run the validation.")
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    with open(args.filter) as json_file:
+        filters = json.load(json_file)
+        filters = [(item['name'], item['value']) for item in filters if not item['completed']]
 
     # create data directory if not exists
     Path("data").mkdir(parents=True, exist_ok=True)
@@ -102,15 +115,16 @@ if __name__ == "__main__":
     train_data = trip_live[~val_mask]
     val_data = trip_live[val_mask]
 
-    logger.info("Creating filters for day, weather, and time.")
-    day_filters = [("day", day) for day in range(0, 7)]
-    weather_filters = [("weather", weather) for weather in ["Clouds", "Clear", "Rain"]]
+    if not filters:
+        logger.info("Creating filters for day, weather, and time.")
+        day_filters = [("day", day) for day in range(0, 7)]
+        weather_filters = [("weather", weather) for weather in ["Clouds", "Clear", "Rain"]]
 
-    start_end_hours = [get_start_end_hours(hour) for hour in range(0, 24)]
-    time_filters = [("time", (start, end)) for start, end in start_end_hours]
+        start_end_hours = [get_start_end_hours(hour) for hour in range(0, 24)]
+        time_filters = [("time", (start, end)) for start, end in start_end_hours]
 
-    filters = day_filters + weather_filters + time_filters
-    logger.info(f"Using filters: {filters}")
+        filters = day_filters + weather_filters + time_filters
+        logger.info(f"Using filters: {filters}")
 
     lambda_seq = (0.001, 0.01, 0.1)
     logger.info(f"Using lambda values: {lambda_seq}")
