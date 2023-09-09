@@ -1,0 +1,246 @@
+{
+    "filter": [
+        {
+            "name": "day",
+            "value": 0,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 1,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 2,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 3,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 4,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 5,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 6,
+            "completed": false
+        },
+        {
+            "name": "weather",
+            "value": "Clouds",
+            "completed": false
+        },
+        {
+            "name": "weather",
+            "value": "Clear",
+            "completed": false
+        },
+        {
+            "name": "weather",
+            "value": "Rain",
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "00:00",
+                "01:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "01:00",
+                "02:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "02:00",
+                "03:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "03:00",
+                "04:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "04:00",
+                "05:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "05:00",
+                "06:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "06:00",
+                "07:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "07:00",
+                "08:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "08:00",
+                "09:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "09:00",
+                "10:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "10:00",
+                "11:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "11:00",
+                "12:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "12:00",
+                "13:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "13:00",
+                "14:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "14:00",
+                "15:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "15:00",
+                "16:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "16:00",
+                "17:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "17:00",
+                "18:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "18:00",
+                "19:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "19:00",
+                "20:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "20:00",
+                "21:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "21:00",
+                "22:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "22:00",
+                "23:00"
+            ],
+            "completed": false
+        },
+        {
+            "name": "time",
+            "value": [
+                "23:00",
+                "00:00"
+            ],
+            "completed": false
+        }
+    ]
+}

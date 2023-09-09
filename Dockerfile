@@ -10,4 +10,6 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD ["python3", "trend_filtering_validation.py"]
+ENV filter ""
+
+CMD ["sh", "-c", "python3 trend_filtering_validation.py --filter=${filter}"]

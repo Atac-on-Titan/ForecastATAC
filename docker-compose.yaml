@@ -5,6 +5,8 @@ volumes:
     name: trend-filtering-validation
   trend-filtering-data:
     name: trend-filtering-data
+  filter:
+    name: filter
   logs:
     name: logs
 
@@ -15,4 +17,7 @@ services:
     volumes:
       - trend-filtering-validation:/app/validation
       - trend-filtering-data:/app/data
+      - filter:/app/filters
       - logs:/app/logs
+    environment:
+      - filter=./filters/filter.json
