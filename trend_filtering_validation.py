@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # download the necessary data
     bucket_name = "statistical-learning"
     files_to_download = ["trip_live_final.feather", 'static/trips.txt', 'static/stop_times.txt', 'static/stops.txt', 'static/routes.txt']
-    file_paths = ["data/live_data_final.feather", 'data/static/trips.txt', 'data/static/stop_times.txt', 'data/static/stops.txt', 'data/static/routes.txt']
+    file_paths = ["data/trip_live_final.feather", 'data/static/trips.txt', 'data/static/stop_times.txt', 'data/static/stops.txt', 'data/static/routes.txt']
 
     logger.info(f"Downloading static and preprocessed final ATAC data if they don't exist in data/ directory.")
     for object_key, local_file_path in zip(files_to_download, file_paths):
