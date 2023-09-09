@@ -84,10 +84,10 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
     :return
         (dict) a dictionary with validation metrics.
     """
-    cond_filter = {cond_filter[0]: cond_filter[1]}
+    cond_filter_dict = {cond_filter[0]: cond_filter[1]}
 
     # Building the unfiltered graph on training data
-    train_graph = vertex_signal(train, routes_graph, **cond_filter)
+    train_graph = vertex_signal(train, routes_graph, **cond_filter_dict)
     difference_operator = difference_op(train_graph, 2)
     time_vec = np.array([x[1] for x in train_graph.nodes(data='elapsed')])
     metric_dict = {}
