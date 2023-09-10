@@ -1,17 +1,13 @@
 """Module for trend filtering functions."""
 import logging.config
-from pathlib import Path
 from typing import Optional, Dict
 
+import cvxpy as cp
 import networkx as nx
 import numpy as np
 import pandas as pd
 import scipy
-import cvxpy as cp
 
-
-log_dir = "logs"
-Path(log_dir).mkdir(parents=True, exist_ok=True)
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +18,7 @@ def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather:
     elapsed time, according to a specific filtering option, passed as keyword argument.
     :param complete_df: The dataframe containing the preprocessed data.
     :param routes_graph: The graph, already built.
-    :param weather: Main weather conditions.
+    :param weather: Main weather conditions, either 0 or 1.
     :param day: The day of the week, as integer in the range [0, 6].
     :param time: The daytime, as an interval specified by a tuple of two integers.
     :return: The graph with the signal defined over the vertex set.
@@ -33,7 +29,7 @@ def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather:
         raise TypeError(
             'This functions builds the graph according to only one filtering option, you have to pass one and only one.')
     if weather is not None:
-        mask = (complete_df['weather_main_post'] == weather.capitalize())
+        mask = (complete_df['weather_main_post'] == weather)
     elif day is not None:
         mask = (complete_df['day_of_week'] == day)
     else:
