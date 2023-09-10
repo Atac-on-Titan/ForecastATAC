@@ -4,13 +4,12 @@ import json
 import logging.config
 from pathlib import Path
 
-import cvxpy as cp
 import numpy as np
 import pandas as pd
 import requests
 
 from preprocessing import build_route_stops, build_stop_graph, get_start_end_hours
-from trend_filtering import vertex_signal, difference_op, trend_filter_validate
+from trend_filtering import trend_filter_validate
 
 
 def s3_download(bucket_name, object_key, local_file_path):
@@ -41,8 +40,7 @@ if __name__ == "__main__":
     log_dir = "logs"
     Path(log_dir).mkdir(parents=True, exist_ok=True)
     logging.config.fileConfig("log_conf.ini")
-    logger = logging.getLogger("trend-filtering-validation")
-    logger.setLevel(logging.INFO)
+    logger = logging.getLogger(__name__)
 
     # Create an argument parser with arguments
     parser = argparse.ArgumentParser(description='Run the trend filtering validation.')

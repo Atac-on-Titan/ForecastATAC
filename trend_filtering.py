@@ -12,9 +12,7 @@ import cvxpy as cp
 
 log_dir = "logs"
 Path(log_dir).mkdir(parents=True, exist_ok=True)
-logging.config.fileConfig("log_conf.ini")
-logger = logging.getLogger("trend-filtering")
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[int] = None,
@@ -113,7 +111,7 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
 
         # Filtering the validation data
         if cond_filter[0] == 'weather':
-            mask = (val['weather_main_post'] == cond_filter[1].capitalize())
+            mask = (val['weather_main_post'] == cond_filter[1])
         elif cond_filter[0] == 'day':
             mask = (val['day_of_week'] == cond_filter[1])
         elif cond_filter[0] == 'time':
