@@ -1,0 +1,14 @@
+{
+    "filter": [
+        {
+            "name": "weather",
+            "value":  0,
+            "completed": false
+        },
+        {
+            "name": "weather",
+            "value": 1,
+            "completed": false
+        }
+    ]
+}

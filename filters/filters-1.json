@@ -1,0 +1,39 @@
+{
+    "filter": [
+        {
+            "name": "day",
+            "value": 0,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 1,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 2,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 3,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 4,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 5,
+            "completed": false
+        },
+        {
+            "name": "day",
+            "value": 6,
+            "completed": false
+        }
+    ]
+}

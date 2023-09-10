@@ -1,0 +1,23 @@
+version: "3.9"
+
+volumes:
+  trend-filtering-validation:
+    name: trend-filtering-validation
+  trend-filtering-data:
+    name: trend-filtering-data
+  filter:
+    name: filter
+  logs:
+    name: logs
+
+services:
+  trend-filtering-validation:
+    build: https://github.com/Atac-on-Titan/ForecastATAC.git#trendfiltering # TODO remove the branch after merged to main
+    image: ghcr.io/atac-on-titan/forecastatac:latest
+    volumes:
+      - trend-filtering-validation:/app/validation
+      - trend-filtering-data:/app/data
+      - filter:/app/filters
+      - logs:/app/logs
+    environment:
+      - filter=./filters/filters-4.json
