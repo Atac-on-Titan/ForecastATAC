@@ -20,6 +20,9 @@ class Filter:
     value: any
     completed: bool
 
+    def file_name(self):
+        return f"{self.name}_{self.value}"
+
 
 class FilterManager:
     """Loads, saves, and updates Filter objects."""
@@ -120,7 +123,7 @@ def difference_op(graph: nx.Graph, order: int) -> scipy.sparse.csr_array:
 
 
 def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: nx.Graph, lambda_seq: tuple[float, ...],
-                          cond_filter: tuple) -> Dict[float, np.ndarray]:
+                          cond_filter: Filter) -> Dict[float, np.ndarray]:
     """Runs a validation using trend filtering on a given train-test split.
 
     :arg
@@ -128,13 +131,11 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
         val (pd.DataFrame): the validation data.
         routes_graph (nx.Graph): the networkx graph of bus routes.
         lambda_seq (tuple[float, ...]): the sequence of lambda values to try.
-        cond_filter (tuple[float, ...]): the filter used to select validation data. A tuple with a key that is either
-        "weather", "day", "time", and a corresponding value, e.g. ("day", 0) for Monday.
-
+        cond_filter (Filter): the filter used to select validation data. An instance of the Filter dataclass.
     :return
         (dict) a dictionary with validation metrics.
     """
-    cond_filter_dict = {cond_filter[0]: cond_filter[1]}
+    cond_filter_dict = {cond_filter.name: cond_filter.value}
 
     logger.info("Building graph with signals.")
     # Building the unfiltered graph on training data
@@ -147,12 +148,12 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
 
     logger.info("Filtering validation set.")
     # Filtering the validation data
-    if cond_filter[0] == 'weather':
-        mask = (val['weather_main_post'] == cond_filter[1])
-    elif cond_filter[0] == 'day':
-        mask = (val['day_of_week'] == cond_filter[1])
-    elif cond_filter[0] == 'time':
-        mask = (val['time_pre_datetime'].between_time(cond_filter[1][0], cond_filter[1][1]))
+    if cond_filter.name == 'weather':
+        mask = (val['weather_main_post'] == cond_filter.value)
+    elif cond_filter.name == 'day':
+        mask = (val['day_of_week'] == cond_filter.value)
+    elif cond_filter.name == 'time':
+        mask = (val['time_pre_datetime'].between_time(cond_filter.value[0], cond_filter.value[1]))
     else:
         raise ValueError('Illegal filtering option.')
     val = val[mask]
@@ -169,7 +170,7 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
 
         # Compute validation metric for specific lambda
         val_congestion = val.merge(congestion_df, on='stop_id_post')
-        error = np.absolute(val_congestion['congestion'] * val_congestion['stop_distance'] - val_congestion['elapsed'])
-        metric_dict[value_lambda] = error
+        error = (val_congestion['congestion'] * val_congestion['stop_distance'] - val_congestion['elapsed']).to_numpy() **2
+        metric_dict[value_lambda] = error.tolist()
 
     return metric_dict

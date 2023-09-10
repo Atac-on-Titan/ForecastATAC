@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import requests
 
-from preprocessing import build_route_stops, build_stop_graph, get_start_end_hours
-from trend_filtering import trend_filter_validate
+from preprocessing import build_route_stops, build_stop_graph
+from trend_filtering import trend_filter_validate, FilterManager
 
 log_dir = "logs"
 Path(log_dir).mkdir(parents=True, exist_ok=True)
@@ -50,9 +50,8 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
 
-    with open(args.filter) as json_file:
-        filters = json.load(json_file)
-        filters = [(item['name'], item['value']) for item in filters['filter'] if not item['completed']]
+    filter_manager = FilterManager(args.filter)
+    uncompleted_filters = filter_manager.get_uncompleted_filters()
 
     # create data directory if not exists
     Path("data").mkdir(parents=True, exist_ok=True)
@@ -88,17 +87,6 @@ if __name__ == "__main__":
     train_data = trip_live[~val_mask]
     val_data = trip_live[val_mask]
 
-    if not filters:
-        logger.info("Creating filters for day, weather, and time.")
-        day_filters = [("day", day) for day in range(0, 7)]
-        weather_filters = [("weather", weather) for weather in range(0, 2)]
-
-        start_end_hours = [get_start_end_hours(hour) for hour in range(0, 24)]
-        time_filters = [("time", (start, end)) for start, end in start_end_hours]
-
-        filters = day_filters + weather_filters + time_filters
-        logger.info(f"Using filters: {filters}")
-
     lambda_seq = (1, 2, 4, 8, 16, 32, 64, 128, 256, 512)
     logger.info(f"Using lambda values: {lambda_seq}")
 
@@ -106,21 +94,15 @@ if __name__ == "__main__":
     logger.info(f"Creating directory {validation_dir} for validation results.")
     Path(validation_dir).mkdir(parents=True, exist_ok=True)
 
-    for trend_filter in filters:
+    for trend_filter in uncompleted_filters:
         logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda values: {lambda_seq}")
         metrics = trend_filter_validate(train_data, val_data, init_graph, lambda_seq, trend_filter)
 
-        metrics_file = f"{validation_dir}/val_{trend_filter}.json"
+        metrics_file = f"{validation_dir}/val_{trend_filter.file_name()}.json"
         logger.info(f"Saving validation metrics to {metrics_file}")
         with open(metrics_file, "w") as outfile:
             json.dump(metrics, outfile)
 
         logger.info(f"Marking {trend_filter} as completed.")
-        with open(args.filter) as json_file:
-            json_filters = json.load(json_file)
-            for json_filter in json_filters['filter']:
-                if json_filter["name"] == trend_filter[0] and json_filter["value"] == trend_filter[1]:
-                    json_filter["completed"] = True
-                    break
-
-            json.dump(json_filters, json_file)
+        trend_filter.completed = True
+        filter_manager.save(args.filter)
