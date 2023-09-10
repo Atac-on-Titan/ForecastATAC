@@ -114,3 +114,13 @@ if __name__ == "__main__":
         logger.info(f"Saving validation metrics to {metrics_file}")
         with open(metrics_file, "w") as outfile:
             json.dump(metrics, outfile)
+
+        logger.info(f"Marking {trend_filter} as completed.")
+        with open(args.filter) as json_file:
+            json_filters = json.load(json_file)
+            for json_filter in json_filters['filter']:
+                if json_filter["name"] == trend_filter[0] and json_filter["value"] == trend_filter[1]:
+                    json_filter["completed"] = True
+                    break
+
+            json.dump(json_filters, json_file)
