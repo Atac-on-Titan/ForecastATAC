@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[int] = None,
@@ -89,11 +89,26 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
     """
     cond_filter_dict = {cond_filter[0]: cond_filter[1]}
 
+    logger.info("Building graph with signals.")
     # Building the unfiltered graph on training data
     train_graph = vertex_signal(train, routes_graph, **cond_filter_dict)
+
+    logger.info("Building difference operator.")
     difference_operator = difference_op(train_graph, 2)
     time_vec = np.array([x[1] for x in train_graph.nodes(data='elapsed')])
     metric_dict = {}
+
+    logger.info("Filtering validation set.")
+    # Filtering the validation data
+    if cond_filter[0] == 'weather':
+        mask = (val['weather_main_post'] == cond_filter[1])
+    elif cond_filter[0] == 'day':
+        mask = (val['day_of_week'] == cond_filter[1])
+    elif cond_filter[0] == 'time':
+        mask = (val['time_pre_datetime'].between_time(cond_filter[1][0], cond_filter[1][1]))
+    else:
+        raise ValueError('Illegal filtering option.')
+    val = val[mask]
 
     for value_lambda in lambda_seq:
         logger.info(f"Validating for lambda: {value_lambda}")
@@ -105,20 +120,9 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
         problem.solve(solver=cp.CVXOPT, verbose=False)
         congestion_df = pd.DataFrame(zip(train_graph.nodes, x.value), columns=['stop_id_post', 'congestion'])
 
-        # Filtering the validation data
-        if cond_filter[0] == 'weather':
-            mask = (val['weather_main_post'] == cond_filter[1])
-        elif cond_filter[0] == 'day':
-            mask = (val['day_of_week'] == cond_filter[1])
-        elif cond_filter[0] == 'time':
-            mask = (val['time_pre_datetime'].between_time(cond_filter[1][0], cond_filter[1][1]))
-        else:
-            raise ValueError('Illegal filtering option.')
-        val = val[mask]
-
         # Compute validation metric for specific lambda
-        val = val.merge(congestion_df, on='stop_id_post')
-        error = np.absolute(val['congestion'] * val['stop_distance'] - val['elapsed'])
+        val_congestion = val.merge(congestion_df, on='stop_id_post')
+        error = np.absolute(val_congestion['congestion'] * val_congestion['stop_distance'] - val_congestion['elapsed'])
         metric_dict[value_lambda] = error
 
     return metric_dict

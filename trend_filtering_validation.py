@@ -11,6 +11,11 @@ import requests
 from preprocessing import build_route_stops, build_stop_graph, get_start_end_hours
 from trend_filtering import trend_filter_validate
 
+log_dir = "logs"
+Path(log_dir).mkdir(parents=True, exist_ok=True)
+logging.config.fileConfig("log_conf.ini")
+logger = logging.getLogger()
+
 
 def s3_download(bucket_name, object_key, local_file_path):
     # we only want to download the data once.
@@ -37,10 +42,6 @@ def s3_download(bucket_name, object_key, local_file_path):
 
 
 if __name__ == "__main__":
-    log_dir = "logs"
-    Path(log_dir).mkdir(parents=True, exist_ok=True)
-    logging.config.fileConfig("log_conf.ini")
-    logger = logging.getLogger(__name__)
 
     # Create an argument parser with arguments
     parser = argparse.ArgumentParser(description='Run the trend filtering validation.')
