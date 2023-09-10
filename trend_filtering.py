@@ -83,7 +83,8 @@ def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather:
     elif day is not None:
         mask = (complete_df['day_of_week'] == day)
     else:
-        mask = (complete_df['time_pre_datetime'].between_time(time[0], time[1]))
+        start_time, end_time = pd.to_datetime(time[0]).time(), pd.to_datetime(time[1]).time()
+        mask = ((complete_df.time_pre_datetime.dt.time >= start_time) & (complete_df.time_pre_datetime.dt.time <= end_time))
 
     complete_df = complete_df[mask]
     if not len(complete_df):
@@ -153,7 +154,9 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
     elif cond_filter.name == 'day':
         mask = (val['day_of_week'] == cond_filter.value)
     elif cond_filter.name == 'time':
-        mask = (val['time_pre_datetime'].between_time(cond_filter.value[0], cond_filter.value[1]))
+        time = cond_filter.value
+        start_time, end_time = pd.to_datetime(time[0]).time(), pd.to_datetime(time[1]).time()
+        mask = ((val.time_pre_datetime.dt.time >= start_time) & (val.time_pre_datetime.dt.time <= end_time))
     else:
         raise ValueError('Illegal filtering option.')
     val = val[mask]

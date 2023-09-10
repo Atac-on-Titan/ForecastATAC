@@ -83,8 +83,8 @@ if __name__ == "__main__":
 
     # validation
     logger.info("Creating train-val split.")
-    trip_live['time_pre_datetime'] = pd.to_datetime(trip_live['time_pre_datetime']).dt.date
-    val_mask = trip_live['time_pre_datetime'] >= np.datetime64('2023-06-09')
+    trip_live['time_pre_datetime'] = pd.to_datetime(trip_live['time_pre_datetime'])
+    val_mask = trip_live['time_pre_datetime'] >= pd.to_datetime('2023-06-09').tz_localize("Europe/Rome")
     train_data = trip_live[~val_mask]
     val_data = trip_live[val_mask]
 
