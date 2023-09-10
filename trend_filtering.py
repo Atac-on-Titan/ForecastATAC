@@ -1,6 +1,9 @@
 """Module for trend filtering functions."""
+import dataclasses
+import json
 import logging.config
-from typing import Optional, Dict
+from dataclasses import dataclass
+from typing import Optional, Dict, Union, List
 
 import cvxpy as cp
 import networkx as nx
@@ -9,6 +12,50 @@ import pandas as pd
 import scipy
 
 logger = logging.getLogger()
+
+
+@dataclass
+class Filter:
+    name: str
+    value: any
+    completed: bool
+
+
+class FilterManager:
+    """Loads, saves, and updates Filter objects."""
+
+    def __init__(self, filters: Union[str, List]):
+        if isinstance(filters, List):
+            self.filters = filters
+        elif isinstance(filters, str):
+            with open(filters, "r") as json_file:
+                filters = json.load(json_file)
+                self.filters = [Filter(item['name'], item['value'], item['completed']) for item in filters['filter']]
+
+    def save(self, path: str):
+        """Saves the filters to a given path."""
+        filters = {"filter": [dataclasses.asdict(filter_) for filter_ in self.filters]}
+
+        with open(path, "w") as json_file:
+            json.dump(filters, json_file)
+
+    def get_filters(self):
+        """Returns the filters in this manager."""
+        return self.filters
+
+    def get_uncompleted_filters(self):
+        """Returns filters that are not marked as completed."""
+        return list(filter(lambda filter_: not filter_.completed, self.filters))
+
+    def get_completed_filters(self):
+        """Returns filters are that are marked as completed."""
+        return list(filter(lambda filter_: filter_.completed, self.filters))
+
+    def set_filter_completed(self, name: str, value: any):
+        """Sets the filter identified by its name and value as completed."""
+        for filter_ in self.filters:
+            if filter_.name == name and filter_.value == value:
+                filter_.completed = True
 
 
 def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[int] = None,
