@@ -2,6 +2,7 @@
 import argparse
 import json
 import logging.config
+import os
 from pathlib import Path
 
 import numpy as np
@@ -42,7 +43,7 @@ def s3_download(bucket_name, object_key, local_file_path):
 
 
 if __name__ == "__main__":
-
+    os.environ["OMP_NUM_THREADS"] = "4"
     # Create an argument parser with arguments
     parser = argparse.ArgumentParser(description='Run the trend filtering validation.')
     parser.add_argument('-f', '--filter', type=str, help="Path to a .json file with the filters for which to run the validation.")
