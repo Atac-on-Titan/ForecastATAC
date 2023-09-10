@@ -88,7 +88,7 @@ if __name__ == "__main__":
     train_data = trip_live[~val_mask]
     val_data = trip_live[val_mask]
 
-    lambda_seq = (1, 2, 4, 8, 16, 32, 64, 128, 256, 512)
+    lambda_seq = (1, 2, 8, 16, 32)
     logger.info(f"Using lambda values: {lambda_seq}")
 
     validation_dir = "validation"
