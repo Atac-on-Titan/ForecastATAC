@@ -46,15 +46,14 @@ if __name__ == "__main__":
 
     # Create an argument parser with arguments
     parser = argparse.ArgumentParser(description='Run the trend filtering validation.')
-    parser.add_argument('-f', '--filter', required=True, type=str, help="Path to a .json file with the filters for which"
-                                                                        "to run the validation.")
+    parser.add_argument('-f', '--filter', type=str, help="Path to a .json file with the filters for which to run the validation.")
 
     # Parse the arguments
     args = parser.parse_args()
 
     with open(args.filter) as json_file:
         filters = json.load(json_file)
-        filters = [(item['name'], item['value']) for item in filters if not item['completed']]
+        filters = [(item['name'], item['value']) for item in filters['filter'] if not item['completed']]
 
     # create data directory if not exists
     Path("data").mkdir(parents=True, exist_ok=True)
@@ -77,6 +76,7 @@ if __name__ == "__main__":
     logger.info("All files present.")
 
     # load the data
+    logger.info("Loading the data.")
     trip_live = pd.read_feather("data/trip_live_final.feather")
     route_stops = build_route_stops('data/static/trips.txt', 'data/static/stop_times.txt', 'data/static/stops.txt',
                                     'data/static/routes.txt')
@@ -85,28 +85,6 @@ if __name__ == "__main__":
     # build the signal over the vertices
     logger.info("Building signal graph.")
     signal_graph = vertex_signal(trip_live, init_graph, weather='clear')
-
-    # produce difference operator
-    difference = difference_op(signal_graph, 2)
-    vector_time = np.array([x[1] for x in signal_graph.nodes(data='elapsed')])
-
-    # Choosing the regularization hyperparameter
-    vlambda = 0.1
-
-    # Variable for ...
-    x = cp.Variable(shape=len(vector_time))
-
-    # defining the optimization problem
-    obj = cp.Minimize((1 / 2) * cp.sum_squares(vector_time - x)
-                      + vlambda * cp.norm(difference @ x, 1))
-    prob = cp.Problem(obj)
-
-    logger.info("Solving optimisation problem.")
-    # solving the optimisation problem
-    prob.solve(solver=cp.CVXOPT, verbose=True)
-    logger.info('Solver status: {}'.format(prob.status))
-
-    congestion_dict = dict(zip(signal_graph.nodes, x.value))
 
     # validation
     logger.info("Creating train-val split.")
@@ -126,7 +104,7 @@ if __name__ == "__main__":
         filters = day_filters + weather_filters + time_filters
         logger.info(f"Using filters: {filters}")
 
-    lambda_seq = (0.001, 0.01, 0.1)
+    lambda_seq = (1, 2, 4, 8, 16, 32, 64, 128, 256, 512)
     logger.info(f"Using lambda values: {lambda_seq}")
 
     validation_dir = "validation"
