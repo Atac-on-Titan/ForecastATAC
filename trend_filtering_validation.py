@@ -96,7 +96,7 @@ if __name__ == "__main__":
     if not filters:
         logger.info("Creating filters for day, weather, and time.")
         day_filters = [("day", day) for day in range(0, 7)]
-        weather_filters = [("weather", weather) for weather in ["Clouds", "Clear", "Rain"]]
+        weather_filters = [("weather", weather) for weather in range(0, 2)]
 
         start_end_hours = [get_start_end_hours(hour) for hour in range(0, 24)]
         time_filters = [("time", (start, end)) for start, end in start_end_hours]

@@ -37,17 +37,12 @@
         },
         {
             "name": "weather",
-            "value": "Clouds",
+            "value":  0,
             "completed": false
         },
         {
             "name": "weather",
-            "value": "Clear",
-            "completed": false
-        },
-        {
-            "name": "weather",
-            "value": "Rain",
+            "value": 1,
             "completed": false
         },
         {
