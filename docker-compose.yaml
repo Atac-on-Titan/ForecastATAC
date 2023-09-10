@@ -20,4 +20,4 @@ services:
       - filter:/app/filters
       - logs:/app/logs
     environment:
-      - filter=./filters/filter.json
+      - filter=./filters/filters.json
