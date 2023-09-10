@@ -17,7 +17,7 @@ logger = logging.getLogger("trend-filtering")
 logger.setLevel(logging.INFO)
 
 
-def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[str] = None,
+def vertex_signal(complete_df: pd.DataFrame, routes_graph: nx.Graph, *, weather: Optional[int] = None,
                   day: Optional[int] = None, time: Optional[tuple[int, int]] = None) -> nx.Graph:
     """
     Function assigning signal over the public transport graph vertexes by averaging across the inbound edges

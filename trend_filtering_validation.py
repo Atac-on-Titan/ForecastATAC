@@ -82,10 +82,6 @@ if __name__ == "__main__":
                                     'data/static/routes.txt')
     init_graph = build_stop_graph('data/static/stops.txt', route_stops)
 
-    # build the signal over the vertices
-    logger.info("Building signal graph.")
-    signal_graph = vertex_signal(trip_live, init_graph, weather='clear')
-
     # validation
     logger.info("Creating train-val split.")
     trip_live['time_pre_datetime'] = pd.to_datetime(trip_live['time_pre_datetime']).dt.date
@@ -113,7 +109,7 @@ if __name__ == "__main__":
 
     for trend_filter in filters:
         logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda values: {lambda_seq}")
-        metrics = trend_filter_validate(train_data, val_data, signal_graph, lambda_seq, trend_filter)
+        metrics = trend_filter_validate(train_data, val_data, init_graph, lambda_seq, trend_filter)
 
         metrics_file = f"{validation_dir}/val_{trend_filter}.json"
         logger.info(f"Saving validation metrics to {metrics_file}")
