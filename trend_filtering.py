@@ -172,7 +172,10 @@ def trend_filter_validate(val: pd.DataFrame, time_vec: np.ndarray, train_graph: 
     loss = cp.Minimize((1 / 2) * cp.sum_squares(time_vec - x)
                        + value_lambda * cp.norm(difference_operator @ x, 1))
     problem = cp.Problem(loss)
-    problem.solve(solver=cp.CVXOPT, verbose=True, warm_start=True)
+    try:
+        problem.solve(solver=cp.CVXOPT, verbose=True, warm_start=True)
+    except Exception as e:
+        logger.error(f"Exception while solving.", exc_info=e)
     congestion_df = pd.DataFrame(zip(train_graph.nodes, x.value), columns=['stop_id_post', 'congestion'])
 
     # Compute validation metric for specific lambda
