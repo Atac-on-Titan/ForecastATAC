@@ -93,7 +93,7 @@ if __name__ == "__main__":
     lambda_seq = (1, 2, 8, 16, 32)
     logger.info(f"Using lambda values: {lambda_seq}")
 
-    validation_dir = "validation"
+    validation_dir = "validation_results"
     logger.info(f"Creating directory {validation_dir} for validation results.")
     Path(validation_dir).mkdir(parents=True, exist_ok=True)
 
