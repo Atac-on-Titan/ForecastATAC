@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 
 from preprocessing import build_route_stops, build_stop_graph
-from trend_filtering import trend_filter_validate, FilterManager
+from trend_filtering import trend_filter_validate, FilterManager, vertex_signal, difference_op
 
 log_dir = "logs"
 Path(log_dir).mkdir(parents=True, exist_ok=True)
@@ -51,7 +51,8 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
 
-    filter_manager = FilterManager(args.filter)
+    lambda_seq = (1, 2, 8, 16, 32)
+    filter_manager = FilterManager(args.filter, lambdas=lambda_seq)
     uncompleted_filters = filter_manager.get_uncompleted_filters()
 
     # create data directory if not exists
@@ -96,14 +97,41 @@ if __name__ == "__main__":
     Path(validation_dir).mkdir(parents=True, exist_ok=True)
 
     for trend_filter in uncompleted_filters:
-        logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda values: {lambda_seq}")
-        metrics = trend_filter_validate(train_data, val_data, init_graph, lambda_seq, trend_filter)
 
-        metrics_file = f"{validation_dir}/val_{trend_filter.file_name()}.json"
-        logger.info(f"Saving validation metrics to {metrics_file}")
-        with open(metrics_file, "w") as outfile:
-            json.dump(metrics, outfile)
+        cond_filter_dict = {trend_filter.name: trend_filter.value}
 
-        logger.info(f"Marking {trend_filter} as completed.")
-        trend_filter.completed = True
-        filter_manager.save(args.filter)
+        logger.info("Building graph with signals.")
+        # Building the unfiltered graph on training data
+        train_graph = vertex_signal(train_data, init_graph, **cond_filter_dict)
+
+        logger.info("Building difference operator.")
+        difference_operator = difference_op(train_graph, 2)
+        time_vec = np.array([x[1] for x in train_graph.nodes(data='elapsed')])
+        metric_dict = {}
+
+        logger.info("Filtering validation set.")
+        # Filtering the validation data
+        if trend_filter.name == 'weather':
+            mask = (val_data['weather_main_post'] == trend_filter.value)
+        elif trend_filter.name == 'day':
+            mask = (val_data['day_of_week'] == trend_filter.value)
+        elif trend_filter.name == 'time':
+            time = trend_filter.value
+            start_time, end_time = pd.to_datetime(time[0]).time(), pd.to_datetime(time[1]).time()
+            mask = ((val_data.time_pre_datetime.dt.time >= start_time) & (val_data.time_pre_datetime.dt.time <= end_time))
+        else:
+            raise ValueError('Illegal filtering option.')
+        val = val_data[mask]
+
+        for value_lambda in trend_filter.get_remaining_lambdas():
+            logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda values: {lambda_seq}")
+            metrics = trend_filter_validate(val_data, time_vec, init_graph, difference_operator, value_lambda, trend_filter)
+
+            metrics_file = f"{validation_dir}/val_{trend_filter.file_name()}_lambda_{value_lambda}.json"
+            logger.info(f"Saving validation metrics to {metrics_file}")
+            with open(metrics_file, "w") as outfile:
+                json.dump(metrics, outfile)
+
+            logger.info(f"Marking lambda {value_lambda} in filter {trend_filter} as completed.")
+            trend_filter.set_lambda_completed(value_lambda)
+            filter_manager.save(args.filter)

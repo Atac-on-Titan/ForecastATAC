@@ -1,14 +1,1 @@
-{
-    "filter": [
-        {
-            "name": "weather",
-            "value":  0,
-            "completed": false
-        },
-        {
-            "name": "weather",
-            "value": 1,
-            "completed": false
-        }
-    ]
-}
+{"filter": [{"name": "weather", "value": 0, "lambdas": [1, 2, 8, 16, 32], "lambdas_completed": [false, false, false, false, false], "completed": false}, {"name": "weather", "value": 1, "lambdas": [1, 2, 8, 16, 32], "lambdas_completed": [false, false, false, false, false], "completed": false}]}

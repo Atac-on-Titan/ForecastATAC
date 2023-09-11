@@ -18,22 +18,49 @@ logger = logging.getLogger()
 class Filter:
     name: str
     value: any
+    lambdas: [float]
+    lambdas_completed: [bool]
     completed: bool
 
     def file_name(self):
         return f"{self.name}_{self.value}"
 
+    def set_lambda_completed(self, completed_lambda):
+        """Marks a lambda as completed."""
+        completed_lambda_idx = self.lambdas.index(completed_lambda)
+        self.lambdas_completed[completed_lambda_idx] = True
+
+    def is_completed(self):
+        return all(self.lambdas_completed)
+
+    def get_remaining_lambdas(self):
+        np_lambdas = np.array(self.lambdas)
+        np_lambdas_completed = np.array(self.lambdas_completed)
+
+        return np_lambdas[~np_lambdas_completed]
+
 
 class FilterManager:
     """Loads, saves, and updates Filter objects."""
 
-    def __init__(self, filters: Union[str, List]):
+    def __init__(self, filters: Union[str, List], **kwargs):
         if isinstance(filters, List):
             self.filters = filters
         elif isinstance(filters, str):
             with open(filters, "r") as json_file:
                 filters = json.load(json_file)
-                self.filters = [Filter(item['name'], item['value'], item['completed']) for item in filters['filter']]
+                self.filters = []
+
+                for item in filters['filter']:
+                    if not item.get('lambdas'):
+                        lambdas = kwargs.get("lambdas")
+                        lambdas_completed = [False] * len(lambdas)
+                        self.filters.append(Filter(item['name'], item['value'], lambdas, lambdas_completed,
+                                       item['completed']))
+                    else:
+                        self.filters.append(Filter(item['name'], item['value'], item['lambdas'], item['lambdas_completed'],
+                                item['completed']))
+
 
     def save(self, path: str):
         """Saves the filters to a given path."""
@@ -48,16 +75,16 @@ class FilterManager:
 
     def get_uncompleted_filters(self):
         """Returns filters that are not marked as completed."""
-        return list(filter(lambda filter_: not filter_.completed, self.filters))
+        return list(filter(lambda filter_: not filter_.is_completed(), self.filters))
 
     def get_completed_filters(self):
         """Returns filters are that are marked as completed."""
-        return list(filter(lambda filter_: filter_.completed, self.filters))
+        return list(filter(lambda filter_: filter_.is_completed(), self.filters))
 
-    def set_filter_completed(self, name: str, value: any):
+    def set_filter_completed(self, name: str, value: any, lambdas: List[float]):
         """Sets the filter identified by its name and value as completed."""
         for filter_ in self.filters:
-            if filter_.name == name and filter_.value == value:
+            if filter_.name == name and filter_.value == value and filter_.lambdas == lambdas:
                 filter_.completed = True
 
 
@@ -123,7 +150,7 @@ def difference_op(graph: nx.Graph, order: int) -> scipy.sparse.csr_array:
     return out
 
 
-def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: nx.Graph, lambda_seq: tuple[float, ...],
+def trend_filter_validate(val: pd.DataFrame, time_vec: np.ndarray, train_graph: nx.Graph, difference_operator, value_lambda: float,
                           cond_filter: Filter) -> Dict[float, np.ndarray]:
     """Runs a validation using trend filtering on a given train-test split.
 
@@ -133,47 +160,24 @@ def trend_filter_validate(train: pd.DataFrame, val: pd.DataFrame, routes_graph: 
         routes_graph (nx.Graph): the networkx graph of bus routes.
         lambda_seq (tuple[float, ...]): the sequence of lambda values to try.
         cond_filter (Filter): the filter used to select validation data. An instance of the Filter dataclass.
+        filter_manager (FilterManager): the filter manager that holds the cond_filter object.
     :return
         (dict) a dictionary with validation metrics.
     """
-    cond_filter_dict = {cond_filter.name: cond_filter.value}
-
-    logger.info("Building graph with signals.")
-    # Building the unfiltered graph on training data
-    train_graph = vertex_signal(train, routes_graph, **cond_filter_dict)
-
-    logger.info("Building difference operator.")
-    difference_operator = difference_op(train_graph, 2)
-    time_vec = np.array([x[1] for x in train_graph.nodes(data='elapsed')])
     metric_dict = {}
 
-    logger.info("Filtering validation set.")
-    # Filtering the validation data
-    if cond_filter.name == 'weather':
-        mask = (val['weather_main_post'] == cond_filter.value)
-    elif cond_filter.name == 'day':
-        mask = (val['day_of_week'] == cond_filter.value)
-    elif cond_filter.name == 'time':
-        time = cond_filter.value
-        start_time, end_time = pd.to_datetime(time[0]).time(), pd.to_datetime(time[1]).time()
-        mask = ((val.time_pre_datetime.dt.time >= start_time) & (val.time_pre_datetime.dt.time <= end_time))
-    else:
-        raise ValueError('Illegal filtering option.')
-    val = val[mask]
+    logger.info(f"Validating for lambda: {value_lambda}")
+    # Filtering on training data
+    x = cp.Variable(shape=len(time_vec))
+    loss = cp.Minimize((1 / 2) * cp.sum_squares(time_vec - x)
+                       + value_lambda * cp.norm(difference_operator @ x, 1))
+    problem = cp.Problem(loss)
+    problem.solve(solver=cp.CVXOPT, verbose=True, warm_start=True)
+    congestion_df = pd.DataFrame(zip(train_graph.nodes, x.value), columns=['stop_id_post', 'congestion'])
 
-    for value_lambda in lambda_seq:
-        logger.info(f"Validating for lambda: {value_lambda}")
-        # Filtering on training data
-        x = cp.Variable(shape=len(time_vec))
-        loss = cp.Minimize((1 / 2) * cp.sum_squares(time_vec - x)
-                           + value_lambda * cp.norm(difference_operator @ x, 1))
-        problem = cp.Problem(loss)
-        problem.solve(solver=cp.CVXOPT, verbose=True, warm_start=True)
-        congestion_df = pd.DataFrame(zip(train_graph.nodes, x.value), columns=['stop_id_post', 'congestion'])
-
-        # Compute validation metric for specific lambda
-        val_congestion = val.merge(congestion_df, on='stop_id_post')
-        error = (val_congestion['congestion'] * val_congestion['stop_distance'] - val_congestion['elapsed']).to_numpy() **2
-        metric_dict[value_lambda] = error.tolist()
+    # Compute validation metric for specific lambda
+    val_congestion = val.merge(congestion_df, on='stop_id_post')
+    error = (val_congestion['congestion'] * val_congestion['stop_distance'] - val_congestion['elapsed']).to_numpy() **2
+    metric_dict[float(value_lambda)] = error.tolist()
 
     return metric_dict
