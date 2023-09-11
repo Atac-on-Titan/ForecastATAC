@@ -166,7 +166,7 @@ def trend_filter_validate(val: pd.DataFrame, time_vec: np.ndarray, train_graph: 
     """
     metric_dict = {}
 
-    logger.info(f"Validating for lambda: {value_lambda}")
+    logger.info(f"Validating for lambda: {value_lambda} and filter {cond_filter}")
     # Filtering on training data
     x = cp.Variable(shape=len(time_vec))
     loss = cp.Minimize((1 / 2) * cp.sum_squares(time_vec - x)

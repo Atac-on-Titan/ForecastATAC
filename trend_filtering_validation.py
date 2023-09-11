@@ -54,6 +54,7 @@ if __name__ == "__main__":
     lambda_seq = (1, 2, 8, 16, 32)
     filter_manager = FilterManager(args.filter, lambdas=lambda_seq)
     uncompleted_filters = filter_manager.get_uncompleted_filters()
+    logger.info(f"Found {len(uncompleted_filters)} uncompleted filters.")
 
     # create data directory if not exists
     Path("data").mkdir(parents=True, exist_ok=True)
@@ -124,7 +125,7 @@ if __name__ == "__main__":
         val = val_data[mask]
 
         for value_lambda in trend_filter.get_remaining_lambdas():
-            logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda values: {lambda_seq}")
+            logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda value: {value_lambda}")
             metrics = trend_filter_validate(val_data, time_vec, init_graph, difference_operator, value_lambda, trend_filter)
 
             metrics_file = f"{validation_dir}/val_{trend_filter.file_name()}_lambda_{value_lambda}.json"
