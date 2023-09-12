@@ -1,1 +1,1 @@
-from .parse import MetricParser
+from .parse import MetricParser, to_mean_error

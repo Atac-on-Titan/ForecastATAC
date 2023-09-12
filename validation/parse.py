@@ -72,3 +72,28 @@ class MetricParser:
             concat_df.to_feather(file_path)
         else:
             self.metrics.to_feather(file_path)
+
+
+def to_mean_error(data: pd.DataFrame) -> pd.DataFrame:
+    """Turns a metric dataframe with columns: name, value, lambda, error into a dataframe with mean error per lambda.
+
+    :arg
+        data (pd.DataFrame): a dataframe with errors for a specic filter.
+
+    :return
+        (pd.DataFrame): a pandas dataframe with the average error per filter and lambda.
+    """
+    means = data.groupby(["name", "value", "lambda"])["error"].mean()
+
+    # Reset the index
+    means_df = means.reset_index()
+
+    # Assign a new index from 1 to n
+    means_df.index = range(0, len(means_df))
+
+    # Rename columns if needed
+    means_df.columns = ['name', 'value', 'lambda', 'avg_error']
+    means_df["lambda"] = means_df["lambda"].astype(float)
+    means_df["avg_error"] = means_df["avg_error"].astype(float)
+    means_df = means_df.sort_values("lambda", ascending=True)
+    return means_df
