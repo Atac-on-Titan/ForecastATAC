@@ -30,6 +30,9 @@ if __name__ == "__main__":
         logger.info(f"Reading dataframe from {file_path}")
         df = pd.read_feather(file_path)
 
+        # ignore all errors that are more than 1 hour since they are crazy outliers
+        df = df[df.error < 3600**2]
+
         logger.info(f"Extracting mean error.")
         df = to_mean_error(df)
 
