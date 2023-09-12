@@ -1,7 +1,9 @@
 """Module for parsing the validation metric files."""
 import json
 import logging
+import os.path
 import re
+from pathlib import Path
 
 import pandas as pd
 
@@ -61,4 +63,12 @@ class MetricParser:
         logger.info(f"Saving metrics at {directory}")
         file_name = f"{self.name}_{self.value}.feather"
         file_path = f"{directory}/{file_name}"
-        self.metrics.to_feather(file_path)
+
+        Path(directory).mkdir(parents=True, exist_ok=True)
+
+        if os.path.exists(file_path):
+            df = pd.read_feather(file_path)
+            concat_df = pd.concat([self.metrics, df], ignore_index=True)
+            concat_df.to_feather(file_path)
+        else:
+            self.metrics.to_feather(file_path)

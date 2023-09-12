@@ -27,9 +27,4 @@ if __name__ == "__main__":
 
         metric_parser = MetricParser(file_path)
         metric_parser.parse()
-        metrics.append(metric_parser.to_pandas_df())
-
-    dfs = pd.concat(metrics)
-    dfs.to_feather("./metrics.feather")
-
-
+        metric_parser.save("data/validation/df")
