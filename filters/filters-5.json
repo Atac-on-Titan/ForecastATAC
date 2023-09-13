@@ -1,0 +1,1 @@
+{"filter": [{"name": "weather", "value": 0, "lambdas": [1, 2, 8, 16, 32], "lambdas_completed": [true, true, true, true, true], "completed": true}, {"name": "weather", "value": 1, "lambdas": [1, 2, 8, 16, 32], "lambdas_completed": [true, true, true, true, true], "completed": true}]}

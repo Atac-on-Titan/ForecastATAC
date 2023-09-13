@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+networkx
+folium
+cvxpy
+cvxopt
+jupyter
+pyarrow
+scipy
+requests
+pytest
