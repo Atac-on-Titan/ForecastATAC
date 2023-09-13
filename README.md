@@ -62,6 +62,7 @@ docker-compose up --build
 The validation process is split into several parts:
 
 - validation loop
+- convert `.json` error files to `.feather`
 - average error
 - plotting
 
@@ -76,20 +77,31 @@ Run the `validation_main.py` script with the `--filter` flag.
 python validation_main.py --filter="<path to filter .json file>"
 ```
 
-## Average Error
-In this step, we average the error and save all averaged errors in a single `.feather` dataframe. The dataframe is saved
-into a `data/validation` directory.
+## Convert to `.feather`
+Then, we need to convert the `.json` files to `.feather` dataframes for easier use.
 
 ### How to run
-Run the `validation_avg_error_main.py` script with the `-d` flag that points to a directory where the `.json` metrics 
+Run the `validation_to_feather_main.py` script with the `-d` flag specifying the directory with the `.json` error files.
+This script might take some hours to complete. The resulting `.feather` dataframes will be saved in `data/validation/df`.
+
+```bash
+python validation_to_feather_main.py -d="<path to directory with error .json files>"
+```
+
+## Average Error
+In this step, we average the error and save all averaged errors in `.feather` dataframes, one dataframe per filter. 
+The dataframe are saved into a `data/validation` directory.
+
+### How to run
+Run the `validation_avg_error_main.py` script with the `-d` flag that points to a directory where the `.feather` metrics 
 from the previous steps are stored.
 
 ```bash
-python validation_avg_error_main.py -d="<path to directory with error json files>"
+python validation_avg_error_main.py -d="<path to directory with error feather files>"
 ```
 
 ## Plotting
-Finally, we plot the average errors in the `.feather` dataframe created in the previous steps and save the plots in 
+Finally, we plot the average errors in the `.feather` dataframes created in the previous step and save the plots in 
 vector format `.eps`.
 
 ### How to run
