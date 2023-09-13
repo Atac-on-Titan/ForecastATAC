@@ -128,7 +128,7 @@ if __name__ == "__main__":
             logger.info(f"Running trend filter validation with filter: {trend_filter} and lambda value: {value_lambda}")
             metrics = trend_filter_validate(val_data, time_vec, init_graph, difference_operator, value_lambda, trend_filter)
 
-            metrics_file = f"{validation_dir}/val_{trend_filter.file_name()}_lambda_{value_lambda}.json"
+            metrics_file = f"{validation_dir}/val_{trend_filter.file_name().replace(':', '_')}_lambda_{value_lambda}.json"
             logger.info(f"Saving validation metrics to {metrics_file}")
             with open(metrics_file, "w") as outfile:
                 json.dump(metrics, outfile)
