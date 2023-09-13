@@ -57,3 +57,45 @@ Alternatively you build the image yourself and then run it.
 ```bash
 docker-compose up --build
 ```
+
+# Validation
+The validation process is split into several parts:
+
+- validation loop
+- average error
+- plotting
+
+## Validation Loop
+The validation loop runs the validation with filters specified in a `.json` file, and stores the resulting `.json` metrics in
+a `validation_results/` directory.
+
+### How to run
+Run the `validation_main.py` script with the `--filter` flag.
+
+```bash
+python validation_main.py --filter="<path to filter .json file>"
+```
+
+## Average Error
+In this step, we average the error and save all averaged errors in a single `.feather` dataframe. The dataframe is saved
+into a `data/validation` directory.
+
+### How to run
+Run the `validation_avg_error_main.py` script with the `-d` flag that points to a directory where the `.json` metrics 
+from the previous steps are stored.
+
+```bash
+python validation_avg_error_main.py -d="<path to directory with error json files>"
+```
+
+## Plotting
+Finally, we plot the average errors in the `.feather` dataframe created in the previous steps and save the plots in 
+vector format `.eps`.
+
+### How to run
+Run the `validation_plots_main.py` script with the `--data` flag that points to the averaged error dataframe and the 
+`--out` flag that points to a directory where the plots will be saved.
+
+```bash
+python validation_plots_main.py --data="<path to averaged error df>" --out="<directory where plots should be saved>"
+```
